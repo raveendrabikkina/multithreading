@@ -19,8 +19,11 @@ public class App {
         StopWatch watch = new StopWatch();
         watch.start();
         System.out.println("NumberOfCoresAvailable : " + numberOfCoresAvailable);
-        execution();//1
-        execution();//2
+        Executor executor = Executors.newFixedThreadPool(numberOfCoresAvailable);
+        execution(executor);//1
+        execution(executor);//2
+        execution(executor);//2
+        ((ExecutorService) executor).shutdown();
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println("Time Taken: " + timeElapsed);
@@ -28,8 +31,7 @@ public class App {
         System.out.println("Time Elapsed: " + watch.getTime()); // Prints: Time Elapsed: 2501
     }
 
-    private static void execution() {
-        Executor executor = Executors.newFixedThreadPool(numberOfCoresAvailable);
+    private static void execution(Executor executor) {
         List<Future<String>> results = new ArrayList<>();
         for (int i = 1; i <= 300; i++) {
             Future<String> result = ((ExecutorService) executor).submit(new Processor(i));
@@ -42,6 +44,5 @@ public class App {
         } catch (Exception e) {
             System.out.println(e);
         }
-        ((ExecutorService) executor).shutdown();
     }
 }
