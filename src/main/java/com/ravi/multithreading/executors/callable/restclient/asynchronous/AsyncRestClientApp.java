@@ -37,7 +37,7 @@ public class AsyncRestClientApp {
         watch.start();
         System.out.println("Making use of " + numberOfCoresAvailable + " available processor cores!!!");
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfCoresAvailable);
-        List<Future<String>> results = execution(executorService);
+        execution(executorService);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println("Time Taken: " + timeElapsed);
@@ -61,7 +61,7 @@ public class AsyncRestClientApp {
         }
         try {
             for (Future<String> result : results) {
-                System.out.println("Result:" + result.get());
+                System.out.println("Result:" + result.get());//Blocking operation but necessary one.
             }
         } catch (Exception e) {
             System.out.println(e);

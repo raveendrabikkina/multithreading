@@ -10,9 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class SynchronousRestClientApp {
     static int numberOfCoresAvailable = Runtime.getRuntime().availableProcessors();
@@ -26,9 +23,7 @@ public class SynchronousRestClientApp {
         StopWatch watch = new StopWatch();
         watch.start();
         System.out.println("NumberOfCoresAvailable : " + numberOfCoresAvailable);
-        ExecutorService executorService = Executors.newFixedThreadPool(numberOfCoresAvailable);
-        execution(executorService);
-
+        execution();
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println("Time Taken: " + timeElapsed);
@@ -38,10 +33,9 @@ public class SynchronousRestClientApp {
         return timeTaken;
     }
 
-    private static void execution(ExecutorService executorService) {
+    private static void execution() {
 
         Integer count = getCount();
-
         int chunks = count / numberOfCoresAvailable;
         List<String> results = new ArrayList<>();
         int skip = 0;
@@ -49,7 +43,6 @@ public class SynchronousRestClientApp {
         try {
             for (int i = 1; i <= numberOfCoresAvailable; i++) {
                 String result = new Processor(skip, top).call();
-                // Future<String> result = executorService.submit(new Processor(skip, top));
                 skip = skip + chunks;
                 results.add(result);
             }
@@ -59,7 +52,6 @@ public class SynchronousRestClientApp {
         } catch (Exception e) {
             System.out.println(e);
         }
-        executorService.shutdown();
     }
 
     private static int getCount() {
