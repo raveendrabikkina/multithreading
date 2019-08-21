@@ -26,10 +26,8 @@ public class SynchronousRestClientApp {
         StopWatch watch = new StopWatch();
         watch.start();
         System.out.println("NumberOfCoresAvailable : " + numberOfCoresAvailable);
-        int records = 300;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfCoresAvailable);
         execution(executorService);
-        executorService.shutdown();
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
@@ -45,22 +43,23 @@ public class SynchronousRestClientApp {
         Integer count = getCount();
 
         int chunks = count / numberOfCoresAvailable;
-        List<Future<String>> results = new ArrayList<>();
+        List<String> results = new ArrayList<>();
         int skip = 0;
         int top = chunks;
         try {
             for (int i = 1; i <= numberOfCoresAvailable; i++) {
-                new Processor(skip, top).call();
-                Future<String> result = executorService.submit(new Processor(skip, top));
+                String result = new Processor(skip, top).call();
+                // Future<String> result = executorService.submit(new Processor(skip, top));
                 skip = skip + chunks;
                 results.add(result);
             }
-            for (Future<String> result : results) {
-                System.out.println("Result:" + result.get());
+            for (String result : results) {
+                System.out.println("Result:" + result);
             }
         } catch (Exception e) {
             System.out.println(e);
         }
+        executorService.shutdown();
     }
 
     private static int getCount() {

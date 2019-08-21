@@ -12,6 +12,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -34,11 +36,8 @@ public class AsyncRestClientApp {
         StopWatch watch = new StopWatch();
         watch.start();
         System.out.println("Making use of " + numberOfCoresAvailable + " available processor cores!!!");
-        int records = 300;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfCoresAvailable);
         List<Future<String>> results = execution(executorService);
-        executorService.shutdown();
-
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println("Time Taken: " + timeElapsed);
@@ -50,8 +49,7 @@ public class AsyncRestClientApp {
 
     private static List<Future<String>> execution(ExecutorService executorService) {
 
-        Integer count = 300;
-        getCount();
+        Integer count = getCount();
         int chunks = count / numberOfCoresAvailable;
         List<Future<String>> results = new ArrayList<>();
         int skip = 0;
@@ -63,15 +61,23 @@ public class AsyncRestClientApp {
         }
         try {
             for (Future<String> result : results) {
-                //System.out.println("Result:" + result.get());
+                System.out.println("Result:" + result.get());
             }
         } catch (Exception e) {
             System.out.println(e);
         }
+        executorService.shutdown();
+
         return results;
     }
 
-    private static void getCount() {
+    private static int getCount() {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.getForEntity("https://services.odata.org/v4/(S(lhtzqh123lmakckjbqv0l1kb))/TripPinServiceRW/People/$count", String.class);
+        return Integer.parseInt(response.getBody());
+    }
+
+    private static void getCount2() {
         String countQuery = "http://api.oceandrivers.com:80/v1.0/getWebCams/";
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY,
