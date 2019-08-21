@@ -1,15 +1,7 @@
 package com.ravi.multithreading.executors.callable.restclient;
 
-import org.apache.cxf.helpers.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -18,8 +10,8 @@ public class Processor implements Callable<String> {
 
     private String skip = "&$skip=";
     private String top = "&$top=";
-    String query = "http://api.oceandrivers.com/v1.0/getWebCams/?";
-    String jsonFormat = "$format=json";
+    String query = "https://services.odata.org/v4/TripPinServiceRW/People?";
+    String jsonFormat = "$format=json&$select=FirstName";
     String finalQuery = query + jsonFormat;
 
     public Processor(int skip, int top) {
@@ -34,15 +26,12 @@ public class Processor implements Callable<String> {
     }
 
     private String getRequest() throws IOException {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials("dummy", "dummy"));
-        final HttpClientContext context = HttpClientContext.create();
-        context.setCredentialsProvider(credsProvider);
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpGet(finalQuery), context);
-        int statusCode = response.getStatusLine().getStatusCode();
-        String value = IOUtils.toString(response.getEntity().getContent());
-        return value;
+        RestTemplate restTemplate = new RestTemplate();
+        System.out.println("finalQuery:" + finalQuery);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(finalQuery, String.class);
+        int statusCode = responseEntity.getStatusCode().value();
+        System.out.println("Status code:" + statusCode);
+
+        return responseEntity.getBody();
     }
 }
