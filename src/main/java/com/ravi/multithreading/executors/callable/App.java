@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,11 +18,11 @@ public class App {
         StopWatch watch = new StopWatch();
         watch.start();
         System.out.println("NumberOfCoresAvailable : " + numberOfCoresAvailable);
-        Executor executor = Executors.newFixedThreadPool(numberOfCoresAvailable);
-        execution(executor);//1
-        execution(executor);//2
-        execution(executor);//2
-        ((ExecutorService) executor).shutdown();
+        ExecutorService executorService = Executors.newFixedThreadPool(numberOfCoresAvailable);
+        execution(executorService);//1
+        execution(executorService);//2
+        execution(executorService);//3
+        executorService.shutdown();
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println("Time Taken: " + timeElapsed);
@@ -31,10 +30,10 @@ public class App {
         System.out.println("Time Elapsed: " + watch.getTime()); // Prints: Time Elapsed: 2501
     }
 
-    private static void execution(Executor executor) {
-        List<Future<String>> results = new ArrayList<>();
+    private static void execution(ExecutorService executorService) {
+        List<Future<String>> results = new ArrayList<>(300);
         for (int i = 1; i <= 300; i++) {
-            Future<String> result = ((ExecutorService) executor).submit(new Processor(i));
+            Future<String> result = executorService.submit(new Processor(i));
             results.add(result);
         }
         try {
